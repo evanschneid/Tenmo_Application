@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,12 +32,12 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public List<User> findAll() {
+    public List<User> findAll(User user) {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT user_id, username, password_hash FROM tenmo_user;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+        String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE user_id != ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
         while(results.next()) {
-            User user = mapRowToUser(results);
+            user = mapRowToUser(results);
             users.add(user);
         }
         return users;
@@ -52,6 +51,17 @@ public class JdbcUserDao implements UserDao {
             return mapRowToUser(rowSet);
         }
         throw new UsernameNotFoundException("User " + username + " was not found.");
+    }
+
+    // added this method in to find a user by an userId since it would be helpful with our balance methods
+    @Override
+    public User findByUserId(int userId) throws UsernameNotFoundException {
+        String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE user_id = ?;";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, userId);
+        if (rowSet.next()){
+            return mapRowToUser(rowSet);
+        }
+        throw new UsernameNotFoundException("UserId " + userId + " was not found.");
     }
 
     @Override
