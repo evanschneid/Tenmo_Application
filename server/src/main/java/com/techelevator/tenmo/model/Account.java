@@ -25,12 +25,7 @@ public class Account {
         return balance;
     }
     public void setBalance(double balance) {
-        if (balance < 1000.00){
-            this.balance = 1000.00;
-        }
-        else {
-            this.balance = balance;
-        }
+        this.balance = balance;
     }
 
     public int getUserId() {

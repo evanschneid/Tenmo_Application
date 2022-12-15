@@ -7,11 +7,11 @@ public class Transfer {
     private int receiverId;
     private String transferType;
     private double transferAmount;
-    private boolean transferStatus;
+    private String transferStatus;
 
     public Transfer(){}
 
-    public Transfer(int transferId, int senderId, int receiverId, String transferType, double transferAmount, boolean transferStatus) {
+    public Transfer(int transferId, int senderId, int receiverId, String transferType, double transferAmount, String transferStatus) {
         this.transferId = transferId;
         this.senderId = senderId;
         this.receiverId = receiverId;
@@ -55,10 +55,10 @@ public class Transfer {
         this.transferAmount = transferAmount;
     }
 
-    public boolean isTransferStatus() {
+    public String getTransferStatus() {
         return transferStatus;
     }
-    public void setTransferStatus(boolean transferStatus) {
+    public void setTransferStatus(String transferStatus) {
         this.transferStatus = transferStatus;
     }
 

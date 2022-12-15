@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface AccountDao {
 
-    Account createNewAccount(Account account);
+    /*Account createNewAccount(Account account);*/
 
-    Account getAccount(User user);
+    Account getAccount(int userId);
 
     List<Account> listAllAccounts();
 

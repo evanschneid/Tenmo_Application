@@ -13,13 +13,14 @@ import java.util.List;
 public class JdbcAccountDao implements AccountDao{
 
     private JdbcTemplate jdbcTemplate;
-    private User user;
     private UserDao userDao;
-    public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
+
+    public JdbcAccountDao(JdbcTemplate jdbcTemplate, JdbcUserDao userDao) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userDao = userDao;
     }
 
-    @Override
+/*    @Override
     public Account createNewAccount(Account account) {
         // create new account
         String sql = "INSERT INTO account (user_id, balance)  VALUES (?,?) RETURNING account_id;";
@@ -30,14 +31,14 @@ public class JdbcAccountDao implements AccountDao{
         } catch (DataAccessException e) {
             return account;
         }
-    }
+    }*/
 
     @Override
-    public Account getAccount(User user) {
+    public Account getAccount(int userId) {
         String sql = "SELECT account_id, user_id, balance " +
                      "FROM account " +
                      "WHERE user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getId());
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         Account account = null;
         if (results.next()){
             account = mapRowToAccount(results);
@@ -53,7 +54,7 @@ public class JdbcAccountDao implements AccountDao{
     // need to look at the catches and see if these are good or not - threw them in to be fancy for now
     @Override
     public double getBalance(int userId) {
-        double balance = 0;
+        double balance = 0.00;
         String sql = "SELECT balance FROM account WHERE user_id = ?;";
         try {
             SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
@@ -61,7 +62,7 @@ public class JdbcAccountDao implements AccountDao{
                 balance = results.getDouble("balance");
             }
         } catch (DataAccessException e) {
-           return 0;
+            System.out.println("something went wrong here");
         }
         return balance;
     }
@@ -69,14 +70,14 @@ public class JdbcAccountDao implements AccountDao{
     // need to look at the catches and see if these are good or not - threw them in to be fancy for now
     @Override
     public double addToBalance(double amountToAdd, int id) {
-        Account account = getAccount(userDao.findByUserId(id));
+        Account account = getAccount(userDao.findByUserId(id).getId());
         double updatedBalance = account.getBalance() + amountToAdd;
         String sql = "UPDATE account SET balance = ? WHERE user_id = ?;";
         try {
             jdbcTemplate.update(sql, updatedBalance, id);
         }
         catch (DataAccessException e) {
-            return account.getBalance();
+            System.out.println("Placeholder");
         }
         return account.getBalance();
     }
@@ -84,7 +85,7 @@ public class JdbcAccountDao implements AccountDao{
     // need to look at the catches and see if these are good or not - threw them in to be fancy for now
     @Override
     public double subtractToBalance(double amountToSubtract, int id) {
-        Account account = getAccount(userDao.findByUserId(id));
+        Account account = getAccount(userDao.findByUserId(id).getId());
         double updatedBalance = account.getBalance() - amountToSubtract;
         String sql = "UPDATE account SET balance = ? WHERE user_id = ?;";
         try {

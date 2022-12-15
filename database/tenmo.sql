@@ -43,9 +43,9 @@ CREATE TABLE transfer (
 	transfer_id int NOT NULL DEFAULT nextval('seq_transfer_id'),
 	sender_id int NOT NULL,
 	receiver_id int NOT NULL,
-	transfer_type varchar(20), -- sender or reciever
+	transfer_type varchar(20), -- sender or reciever or maybe receiver?
 	transfer_amount numeric(13,2) NOT NULL,
-	transfer_status boolean NOT NULL DEFAULT false, 
+	transfer_status varchar(20) NOT NULL DEFAULT 'Pending',  -- pending, approved, rejected 
 	CONSTRAINT PK_transfer PRIMARY KEY (transfer_id),
 	CONSTRAINT FK_transfer_tenmo_user_sender FOREIGN KEY (sender_id) REFERENCES tenmo_user (user_id),
 	CONSTRAINT FK_transfer_tenmo_user_receiver FOREIGN KEY (receiver_id) REFERENCES tenmo_user (user_id)

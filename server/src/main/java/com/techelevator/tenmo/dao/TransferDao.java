@@ -7,10 +7,13 @@ import java.util.List;
 
 public interface TransferDao {
 
+    boolean updateRequestTransfer(int transferId, String transferStatus);
 
-    boolean sendTransfer(User userSender, User userReceiver, double sendingAmount);
+    boolean requestTransfer(int senderId, int receiverId, double sendingAmount);
 
-    List<Transfer> seeAllTransfers();
+    boolean sendTransfer(int senderId, int receiverId, double sendingAmount);
+
+    List<Transfer> seeAllTransfers(int userId);
 
     Transfer getTransfer(User user, int transferId);
 }

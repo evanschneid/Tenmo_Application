@@ -5,17 +5,14 @@ import com.techelevator.tenmo.dao.JdbcUserDao;
 import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Transfer;
-import com.techelevator.tenmo.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
 @RestController
@@ -31,28 +28,18 @@ public class TransferController {
         this.userDao = userDao;
     }
 
-    // This method will most likely be removed, but keeping until the sendTransfer one below works
-    @RequestMapping(method = RequestMethod.PUT)
-    public void sendTransfer(@Valid Principal senderPrincipal, User receiver){ // change to int senderId instead of user???
-        String senderName = senderPrincipal.getName();
-       // jdbcTransferDao.sendTransfer(userDao.findByUsername(senderName), receiver); //---- added a double in the parameter so that is missing here now
-        //transferDao.getTransfer() --- try and implement this once we get the getTransfer method up and running - change method from a void to return something
-    }
-
-    // trying to get the send transfer to work, currently the postman gives us false, but we want to return true
-    // thinking about a take a turn to see why this is the case and if we are missing something important with this method or the jdbc sendTransfer one
-    // maybe the missing extra path is the issue? or that might not be needed at this point.....
+    // this method alls a principle user (logged-in user) to send a transfer to another user
     @RequestMapping(method = RequestMethod.POST)
     public Boolean sendTransfer(@Valid Principal senderPrincipal, @RequestBody Transfer transfer) {
-        // public Boolean sendTransfer(@Valid Principal senderPrincipal, String receiverName, double sentAmount) {
         String senderName = senderPrincipal.getName();
-        boolean transfer2 = jdbcTransferDao.sendTransfer(userDao.findByUsername(senderName), userDao.findByUsername(userDao.findByUserId(transfer.getReceiverId()).getUsername()), transfer.getTransferAmount());
-        // boolean transfer2 = jdbcTransferDao.sendTransfer(userDao.findByUsername(senderName), userDao.findByUsername(receiverName), sentAmount);
+        boolean transfer2 = jdbcTransferDao.sendTransfer(userDao.findByUsername(senderName).getId(),
+                transfer.getReceiverId(), transfer.getTransferAmount());
         return transfer2;
     }
 
+    // this method gets a specific transfer and must be connected to the principle user (logged-in user)
     @RequestMapping(path = "/{transferId}", method = RequestMethod.GET)
-    public Transfer getTransfer(@Valid Principal principal, int transferId){
+    public Transfer getTransfer(@Valid Principal principal, @PathVariable int transferId){
         String name = principal.getName();
         Transfer transfer = jdbcTransferDao.getTransfer(userDao.findByUsername(name), transferId);
         if (transfer == null) {
@@ -61,5 +48,37 @@ public class TransferController {
         else {
             return transfer;
         }
+    }
+
+    // this method gets a list of all transfer associated to the principle user (logged-in user)
+    @RequestMapping(path = "/list", method = RequestMethod.GET)
+    public List<Transfer> getTransferList(@Valid Principal principal) {
+        String name = principal.getName();
+        List<Transfer> transferList = jdbcTransferDao.seeAllTransfers(userDao.findByUsername(name).getId());
+        if (transferList == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Transfer List Not Found");
+        }
+        else {
+            return transferList;
+        }
+    }
+
+    // This method requests a transfer from another user
+    @RequestMapping(path = "/request", method = RequestMethod.POST)
+    public boolean requestTransfer(@Valid Principal principal, @RequestBody Transfer transfer) {
+        String senderName = principal.getName();
+        boolean transfer2 = jdbcTransferDao.requestTransfer(userDao.findByUsername(senderName).getId(),
+                transfer.getReceiverId(), transfer.getTransferAmount());
+        return transfer2;
+    }
+
+    // This method was working when we had the parameters for the updateRequestMethod as Transfer transfer, but now it is not working when we have it as int transferId
+    // commented out option below is the code that was working before but this was not protected by the principal
+    @RequestMapping(path = "/pending/{transferId}", method = RequestMethod.PUT)
+    public boolean updatedTransferRequestStatus(@Valid Principal principal, @RequestBody Transfer transfer, @PathVariable int transferId) {
+        String receiverName = principal.getName();
+        boolean transfer2 = jdbcTransferDao.updateRequestTransfer(userDao.findByUsername(receiverName).getId(), transfer.getTransferStatus());
+        //boolean test = jdbcTransferDao.updateRequestTransfer(transfer, transfer.getTransferStatus());
+        return transfer2;
     }
 }
