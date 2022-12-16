@@ -67,6 +67,7 @@ VALUES (1001, 1000),
 INSERT INTO transfer (sender_id, receiver_id, transfer_type,
 transfer_amount, transfer_status)
 VALUES(1001,1002,'send',500,'approved'),
-       (1002,1001,'send',600,'approved');;
+       (1002,1001,'send',600,'pending'),
+       (1002,1001,'send',6000,'pending');;
 
 COMMIT;

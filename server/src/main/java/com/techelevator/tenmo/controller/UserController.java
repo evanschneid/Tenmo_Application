@@ -24,6 +24,7 @@ public class UserController {
         this.userDao = userDao;
     }
 
+    // this method gets a list of all users (expected for the principle (logged-in user))
     @RequestMapping(method = RequestMethod.GET)
     public List<User> listAllUsers(@Valid Principal principal) {
         String name = principal.getName();

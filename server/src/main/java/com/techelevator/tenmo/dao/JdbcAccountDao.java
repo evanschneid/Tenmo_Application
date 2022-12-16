@@ -20,7 +20,9 @@ public class JdbcAccountDao implements AccountDao{
         this.userDao = userDao;
     }
 
-/*    @Override
+    // this method will be used when we all the users to have more than 1 account associated to their userId
+    /***************************************
+    //@Override
     public Account createNewAccount(Account account) {
         // create new account
         String sql = "INSERT INTO account (user_id, balance)  VALUES (?,?) RETURNING account_id;";
@@ -31,8 +33,10 @@ public class JdbcAccountDao implements AccountDao{
         } catch (DataAccessException e) {
             return account;
         }
-    }*/
+    }
+    **************************/
 
+    // this method gets a specific account related to a user
     @Override
     public Account getAccount(int userId) {
         String sql = "SELECT account_id, user_id, balance " +
@@ -46,12 +50,13 @@ public class JdbcAccountDao implements AccountDao{
         return account;
     }
 
+    // have not implemented multiple accounts for a specific user yet
     @Override
     public List<Account> listAllAccounts() {
         return null;
     }
 
-    // need to look at the catches and see if these are good or not - threw them in to be fancy for now
+    // this method gets the users account balance for a specific account
     @Override
     public double getBalance(int userId) {
         double balance = 0.00;
@@ -62,12 +67,12 @@ public class JdbcAccountDao implements AccountDao{
                 balance = results.getDouble("balance");
             }
         } catch (DataAccessException e) {
-            System.out.println("something went wrong here");
+            System.out.println("Issue with getting balance.");
         }
         return balance;
     }
 
-    // need to look at the catches and see if these are good or not - threw them in to be fancy for now
+    // this method adds the amount in the transfer from the users account balance
     @Override
     public double addToBalance(double amountToAdd, int id) {
         Account account = getAccount(userDao.findByUserId(id).getId());
@@ -77,13 +82,13 @@ public class JdbcAccountDao implements AccountDao{
             jdbcTemplate.update(sql, updatedBalance, id);
         }
         catch (DataAccessException e) {
-            System.out.println("Placeholder");
+            System.out.println("Issue with adding to balance");
         }
         account = getAccount(id);
         return account.getBalance();
     }
 
-    // need to look at the catches and see if these are good or not - threw them in to be fancy for now
+    // this method subtracts the amount in the transfer from the users account balance
     @Override
     public double subtractToBalance(double amountToSubtract, int id) {
         Account account = getAccount(id);
@@ -93,7 +98,7 @@ public class JdbcAccountDao implements AccountDao{
             jdbcTemplate.update(sql, updatedBalance, id);
         }
         catch (DataAccessException e) {
-            return account.getBalance();
+            System.out.println("Issue with subtracting from balance");
         }
         account = getAccount(id);
         return account.getBalance();

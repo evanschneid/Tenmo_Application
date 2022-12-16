@@ -15,11 +15,14 @@ public class JdbcTransferDao implements TransferDao{
 
     private JdbcTemplate jdbcTemplate;
     private JdbcAccountDao jdbcAccountDao;
-    public JdbcTransferDao(JdbcTemplate jdbcTemplate, JdbcAccountDao jdbcAccountDao) {
+    private JdbcUserDao jdbcUserDao;
+    public JdbcTransferDao(JdbcTemplate jdbcTemplate, JdbcAccountDao jdbcAccountDao, JdbcUserDao jdbcUserDao) {
         this.jdbcTemplate = jdbcTemplate;
         this.jdbcAccountDao = jdbcAccountDao;
+        this.jdbcUserDao = jdbcUserDao;
     }
 
+    // I dont think we use this method anywhere, so we might not need it anymore **************************
     @Override
     public int findTransferId(int userId) {
         int transfer = 0;
@@ -31,16 +34,60 @@ public class JdbcTransferDao implements TransferDao{
         return transfer;
     }
 
-
-    // currently, this method is not updating our database to Approved with the parameter as int transferId, it was working with Transfer transfer
-    // this method will most likely take in the reject status as well -- still need to look into this and see if it is the best route
     @Override
-    public boolean updateRequestTransfer(int transferId, String transferStatus) { // int transferId
-        if (transferStatus.equalsIgnoreCase("approved")) {
-            String sql = "UPDATE transfer SET transfer_status = ? WHERE transfer_id = ?;";
-            jdbcTemplate.update(sql, transferStatus, transferId);
-            return true;
-        } else {
+    public List<Transfer> getAllPendingUserTransfers(int userId) {
+        List<Transfer> pendingList = new ArrayList<>();
+        String sql = "SELECT transfer_id, sender_id, receiver_id, transfer_type, transfer_amount, Transfer_status " +
+                     "FROM transfer " +
+                     "WHERE (sender_id = ? OR receiver_id = ?) AND transfer_status ILIKE 'pending';";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId, userId);
+        while(results.next()) {
+            Transfer transfer = mapRowToTransfer(results);
+            pendingList.add(transfer);
+        }
+        return pendingList;
+    }
+
+    // this method updates the requestTransfer below to either Approved or Rejected, depending on the input by the receiving user
+    // the status will stay pending if the amount requested is negative, 0,
+    @Override
+    public boolean updateRequestTransfer(int receiverId, int transferId, String transferStatus) {
+        Transfer transfer = getTransfer(jdbcUserDao.findByUserId(receiverId), transferId);
+
+        // check to see if the transfer amount is less than the receiving users balance
+        if (transfer.getTransferAmount() <= jdbcAccountDao.getBalance(receiverId)) {
+            if (transferStatus.equalsIgnoreCase("rejected")) {
+
+                // We needed to include the receiver_id in the WHERE statement in order to make sure the logged-in user ->
+                // in the controller class is the one approving or rejecting this request
+                String sql = "UPDATE transfer SET transfer_status = ? WHERE transfer_id = ? AND receiver_id = ?;";
+                jdbcTemplate.update(sql, transferStatus, transferId, receiverId);
+
+                System.out.println("Transfer Request was rejected by receiving user.");
+                return true;
+            }
+            else if (transferStatus.equalsIgnoreCase("approved")) {
+
+                String sql = "UPDATE transfer SET transfer_status = ? WHERE transfer_id = ? AND receiver_id = ?;";
+                jdbcTemplate.update(sql, transferStatus, transferId, receiverId);
+                // update the balances for the sender and the receiver
+                jdbcAccountDao.addToBalance(transfer.getTransferAmount(), transfer.getSenderId());
+                jdbcAccountDao.subtractToBalance(transfer.getTransferAmount(), receiverId);
+
+                System.out.println("Transfer Request was approved by receiving user.");
+                return true;
+            }
+            else {
+                System.out.println("Something went wrong and request is still in pending.");
+                return false;
+            }
+        }
+        else {
+            // we reject the request if the amount requested is more than the current balance for the receiver
+            String sql = "UPDATE transfer SET transfer_status = 'rejected' WHERE transfer_id = ? AND receiver_id = ?;";
+            jdbcTemplate.update(sql, transferId, receiverId);
+
+            System.out.println("The transfer amount is more than users current balance.");
             return false;
         }
     }
@@ -49,47 +96,54 @@ public class JdbcTransferDao implements TransferDao{
     // this means the receiver will be the person sending money to the person who initiated the request (kinda backwards but thats how venmo kinda works)
     @Override
     public boolean requestTransfer(int senderId, int receiverId, double sendingAmount) {
+        // check to make sure the sender and the receiver are different users
         if (senderId == receiverId) {
-            // these souts will need to removed but they are used for testing purposes if something goes wrong with the method
-            System.out.println("had an issue at step 1");
+            System.out.println("Send user cannot be the same as Receiving user.");
             return false;
         }
-        if (sendingAmount <= jdbcAccountDao.getBalance(senderId) && sendingAmount > 0) {
+        // check to make sure sending amount is over 0 and not negative (this will be compared to the receivers balance in another method)
+        if (sendingAmount > 0) { // (sendingAmount <= jdbcAccountDao.getBalance(senderId) && sendingAmount > 0)
             String sql = "INSERT INTO transfer (sender_id, receiver_id, transfer_type, transfer_amount, transfer_status) " +
                          "VALUES (?,?,'request',?,'pending');";
             jdbcTemplate.update(sql, senderId, receiverId, sendingAmount);
+
+            System.out.println("Transfer Request has been sent.");
             return true;
         }
         else {
-            System.out.println("had an issue at this step 2");
+            System.out.println("Transfer Request amount cannot be 0 or negative.");
             return false;
         }
     }
 
-    // updated this method to include the sending amount and it should be updating balances of both the sending and receiver
+    // this method allows a user to send money to a receiving user (this is approved automatically since the sender is giving away their money)
     @Override
     public boolean sendTransfer(int senderId, int receiverId, double sendingAmount) {
+        // check to make sure the sender and the receiver are different users
         if (senderId == receiverId){
-            System.out.println("had an issue at step 1");
+            System.out.println("Send user cannot be the same as Receiving user.");
             return false;
         }
+        // check to make sure sending amount is over 0 and not negative compare to the senders balance
         if (sendingAmount <= jdbcAccountDao.getBalance(senderId) && sendingAmount > 0){
             String sql = "INSERT INTO transfer (sender_id, receiver_id, transfer_type, transfer_amount, transfer_status) " +
                          "VALUES (?,?,'send',?, 'approved'); ";
             jdbcTemplate.update(sql, senderId, receiverId, sendingAmount);
-            // these next two lines update the balances to the sender and the receiver
+            // update the balances for the sender and the receiver
             jdbcAccountDao.addToBalance(sendingAmount, receiverId);
             jdbcAccountDao.subtractToBalance(sendingAmount, senderId);
+
+            System.out.println("Transfer Request has been sent.");
             return true;
         }
         else {
-            System.out.println("had an issue at this step 2");
+            System.out.println("Transfer Request amount is not allowed");
             return false;
         }
 
     }
 
-
+    // this method creates a list of all transfers related to the userId, approved, reject, or pending
     @Override
     public List<Transfer> seeAllTransfers(int userId) {
         List<Transfer> list = new ArrayList<>();
@@ -104,6 +158,7 @@ public class JdbcTransferDao implements TransferDao{
         return list;
     }
 
+    // this method allows a user to get a specific transfer via a transferId
     @Override
     public Transfer getTransfer(User user, int transferId) {
         Transfer transfer = null;

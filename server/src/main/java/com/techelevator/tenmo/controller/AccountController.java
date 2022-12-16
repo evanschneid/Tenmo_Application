@@ -1,11 +1,9 @@
 package com.techelevator.tenmo.controller;
 
-import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.JdbcAccountDao;
 import com.techelevator.tenmo.dao.JdbcUserDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +18,6 @@ import java.security.Principal;
 public class AccountController {
 
     private JdbcAccountDao jdbcAccountDao;
-    private AccountDao accountDao;
     private UserDao userDao;
 
     public AccountController(JdbcAccountDao jdbcAccountDao, JdbcUserDao userDao) {
@@ -35,6 +32,7 @@ public class AccountController {
         return jdbcAccountDao.createNewAccount(account);
     }*/
 
+    // this method gets a specific account and must be connected to the principle user (logged-in user)
     @RequestMapping(method = RequestMethod.GET)
     public Account getAccount(@Valid Principal principal) {
         String name = principal.getName();
@@ -47,6 +45,7 @@ public class AccountController {
         }
     }
 
+    // this method gets a specific balance and must be connected to the principle user (logged-in user)
     @RequestMapping(path = "/balance", method = RequestMethod.GET)
     public double getBalance(@Valid Principal principal) {
         String name = principal.getName();

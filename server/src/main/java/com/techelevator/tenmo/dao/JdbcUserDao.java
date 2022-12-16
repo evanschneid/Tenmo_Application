@@ -20,6 +20,7 @@ public class JdbcUserDao implements UserDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    // this method finds a usersId by the users username
     @Override
     public int findIdByUsername(String username) {
         String sql = "SELECT user_id FROM tenmo_user WHERE username ILIKE ?;";
@@ -31,6 +32,7 @@ public class JdbcUserDao implements UserDao {
         }
     }
 
+    // this method creates a list of all users
     @Override
     public List<User> findAll(User user) {
         List<User> users = new ArrayList<>();
@@ -43,6 +45,7 @@ public class JdbcUserDao implements UserDao {
         return users;
     }
 
+    // this method finds a user by their username
     @Override
     public User findByUsername(String username) throws UsernameNotFoundException {
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE username ILIKE  ?;";
@@ -53,7 +56,7 @@ public class JdbcUserDao implements UserDao {
         throw new UsernameNotFoundException("User " + username + " was not found.");
     }
 
-    // added this method in to find a user by an userId since it would be helpful with our balance methods
+    // this method finds a user by their userId
     @Override
     public User findByUserId(int userId) throws UsernameNotFoundException {
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE user_id = ?;";
@@ -64,6 +67,8 @@ public class JdbcUserDao implements UserDao {
         throw new UsernameNotFoundException("UserId " + userId + " was not found.");
     }
 
+    // this method creates a new user and adds them into the database
+    // also, this creates a new account for each new user with a default value of $1000 in the account
     @Override
     public boolean create(String username, String password) {
 
@@ -77,12 +82,12 @@ public class JdbcUserDao implements UserDao {
             return false;
         }
 
-        // TODO: Create the account record with initial balance
+        // added the account creation information below (each new user gets an account automatically
         String sqlAccount = "INSERT INTO account (user_id, balance)  VALUES (?,1000) RETURNING account_id;";
         try {
             jdbcTemplate.queryForObject(sqlAccount, int.class, newUserId);
         } catch (DataAccessException e) {
-            System.out.println("This is have something at somepoint");
+            System.out.println("Issue with creating an account associated with the new user.");
         }
 
         return true;

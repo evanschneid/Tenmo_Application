@@ -28,13 +28,15 @@ public class TransferController {
         this.userDao = userDao;
     }
 
-    // this method alls a principle user (logged-in user) to send a transfer to another user
+    // this method allows a principle user (logged-in user) to send a transfer to another user
     @RequestMapping(method = RequestMethod.POST)
     public Boolean sendTransfer(@Valid Principal senderPrincipal, @RequestBody Transfer transfer) {
+        // get the name/username of the principle user
         String senderName = senderPrincipal.getName();
-        boolean transfer2 = jdbcTransferDao.sendTransfer(userDao.findByUsername(senderName).getId(),
+        // use the findByUsername method to find the id associated with the principle user
+        boolean transferResults = jdbcTransferDao.sendTransfer(userDao.findByUsername(senderName).getId(),
                 transfer.getReceiverId(), transfer.getTransferAmount());
-        return transfer2;
+        return transferResults;
     }
 
     // this method gets a specific transfer and must be connected to the principle user (logged-in user)
@@ -67,20 +69,26 @@ public class TransferController {
     @RequestMapping(path = "/request", method = RequestMethod.POST)
     public boolean requestTransfer(@Valid Principal principal, @RequestBody Transfer transfer) {
         String senderName = principal.getName();
-        boolean transfer2 = jdbcTransferDao.requestTransfer(userDao.findByUsername(senderName).getId(),
+        boolean transferResults = jdbcTransferDao.requestTransfer(userDao.findByUsername(senderName).getId(),
                 transfer.getReceiverId(), transfer.getTransferAmount());
-        return transfer2;
+        return transferResults;
     }
 
-    // This method was working when we had the parameters for the updateRequestMethod as Transfer transfer, but now it is not working when we have it as int transferId
-    // commented out option below is the code that was working before but this was not protected by the principal
+    // this method updates a specific transfer request (that is currently in Pending) to either Approved or Rejected,
+    // based on the receivers response
     @RequestMapping(path = "/pending/{transferId}", method = RequestMethod.PUT)
     public boolean updatedTransferRequestStatus(@Valid Principal principal, @RequestBody Transfer transfer, @PathVariable int transferId) {
         String receiverName = principal.getName();
-        boolean transfer2 = jdbcTransferDao.updateRequestTransfer(jdbcTransferDao.findTransferId(userDao.findByUsername(receiverName).getId()), transfer.getTransferStatus());
-        //boolean transfer2 = jdbcTransferDao.updateRequestTransfer(userDao.findByUsername(receiverName).getId(), transfer.getTransferStatus());
-        //boolean test = jdbcTransferDao.updateRequestTransfer(transfer, transfer.getTransferStatus());
-        return transfer2;
+        boolean transferResults = jdbcTransferDao.updateRequestTransfer(userDao.findByUsername(receiverName).getId(),
+                transferId, transfer.getTransferStatus());
+        return transferResults;
+    }
+
+    @RequestMapping(path = "/list/pending", method = RequestMethod.GET)
+    public List<Transfer> getPendingTransferList(@Valid Principal principal) {
+        String userName = principal.getName();
+        List<Transfer> pendingList = jdbcTransferDao.getAllPendingUserTransfers(userDao.findIdByUsername(userName));
+        return pendingList;
     }
 
 
