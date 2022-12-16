@@ -79,13 +79,14 @@ public class JdbcAccountDao implements AccountDao{
         catch (DataAccessException e) {
             System.out.println("Placeholder");
         }
+        account = getAccount(id);
         return account.getBalance();
     }
 
     // need to look at the catches and see if these are good or not - threw them in to be fancy for now
     @Override
     public double subtractToBalance(double amountToSubtract, int id) {
-        Account account = getAccount(userDao.findByUserId(id).getId());
+        Account account = getAccount(id);
         double updatedBalance = account.getBalance() - amountToSubtract;
         String sql = "UPDATE account SET balance = ? WHERE user_id = ?;";
         try {
@@ -94,6 +95,7 @@ public class JdbcAccountDao implements AccountDao{
         catch (DataAccessException e) {
             return account.getBalance();
         }
+        account = getAccount(id);
         return account.getBalance();
     }
 

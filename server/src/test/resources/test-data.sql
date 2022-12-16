@@ -57,9 +57,16 @@ INSERT INTO tenmo_user (username, password_hash)
 VALUES ('bob', '$2a$10$G/MIQ7pUYupiVi72DxqHquxl73zfd7ZLNBoB2G6zUb.W16imI2.W2'),
        ('user', '$2a$10$Ud8gSvRS4G1MijNgxXWzcexeXlVs4kWDOkjE7JFIkNLKEuE57JAEy');
 
-INSERT INTO account (account_id, user_id, balance)
-VALUES (2001, 1001, 1000),
-       (2002, 1002, 5000);
+--INSERT INTO account (user_id, balance)
+--VALUES (1001, 1000),
+--       (1002, 5000);
+INSERT INTO account (user_id, balance)
+VALUES (1001, 1000),
+       (1002, 1000);
 
+INSERT INTO transfer (sender_id, receiver_id, transfer_type,
+transfer_amount, transfer_status)
+VALUES(1001,1002,'send',500,'approved'),
+       (1002,1001,'send',600,'approved');;
 
 COMMIT;

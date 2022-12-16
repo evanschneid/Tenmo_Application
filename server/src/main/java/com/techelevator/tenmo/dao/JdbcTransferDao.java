@@ -15,10 +15,22 @@ public class JdbcTransferDao implements TransferDao{
 
     private JdbcTemplate jdbcTemplate;
     private JdbcAccountDao jdbcAccountDao;
-    private JdbcTransferDao(JdbcTemplate jdbcTemplate, JdbcAccountDao jdbcAccountDao) {
+    public JdbcTransferDao(JdbcTemplate jdbcTemplate, JdbcAccountDao jdbcAccountDao) {
         this.jdbcTemplate = jdbcTemplate;
         this.jdbcAccountDao = jdbcAccountDao;
     }
+
+    @Override
+    public int findTransferId(int userId) {
+        int transfer = 0;
+        String sql = "SELECT transfer_id FROM transfer WHERE sender_id = ? OR receiver_id = ? ;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId,userId);
+        if(results.next()){
+            transfer=results.getInt("transfer_id");
+        }
+        return transfer;
+    }
+
 
     // currently, this method is not updating our database to Approved with the parameter as int transferId, it was working with Transfer transfer
     // this method will most likely take in the reject status as well -- still need to look into this and see if it is the best route
@@ -76,6 +88,7 @@ public class JdbcTransferDao implements TransferDao{
         }
 
     }
+
 
     @Override
     public List<Transfer> seeAllTransfers(int userId) {

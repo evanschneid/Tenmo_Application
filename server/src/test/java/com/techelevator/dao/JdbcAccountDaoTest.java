@@ -19,12 +19,12 @@ public class JdbcAccountDaoTest extends BaseDaoTests{
         sut = new JdbcAccountDao(jdbcTemplate, jdbcUserDao);
     }
 
-/*    @Test
+    @Test
     public void getAccountTest() {
 
-        Account account = sut.getAccount(user);
-        Assert.assertEquals("2001", account.getAccountId());
-    }*/
+        Account account = sut.getAccount(1001);
+        Assert.assertEquals(2001, account.getAccountId());
+    }
 
     @Test
     public void getBalanceTest() {
@@ -34,14 +34,17 @@ public class JdbcAccountDaoTest extends BaseDaoTests{
 
     @Test
     public void addToBalanceTest() {
-        double accountResults = sut.addToBalance(500, 1001);
-        Assert.assertEquals(1500, accountResults, 2);
+        double accountResults = sut.addToBalance(500.00, 1002);
+        Assert.assertEquals(1500.00, accountResults, 2);
     }
 
     @Test
     public void subtractToBalanceTest() {
-        double accountResults = sut.subtractToBalance(500, 1001);
+        double accountResults = sut.subtractToBalance(500, 1002);
         Assert.assertEquals(500, accountResults, 2);
     }
+
+
+
 
 }

@@ -77,8 +77,11 @@ public class TransferController {
     @RequestMapping(path = "/pending/{transferId}", method = RequestMethod.PUT)
     public boolean updatedTransferRequestStatus(@Valid Principal principal, @RequestBody Transfer transfer, @PathVariable int transferId) {
         String receiverName = principal.getName();
-        boolean transfer2 = jdbcTransferDao.updateRequestTransfer(userDao.findByUsername(receiverName).getId(), transfer.getTransferStatus());
+        boolean transfer2 = jdbcTransferDao.updateRequestTransfer(jdbcTransferDao.findTransferId(userDao.findByUsername(receiverName).getId()), transfer.getTransferStatus());
+        //boolean transfer2 = jdbcTransferDao.updateRequestTransfer(userDao.findByUsername(receiverName).getId(), transfer.getTransferStatus());
         //boolean test = jdbcTransferDao.updateRequestTransfer(transfer, transfer.getTransferStatus());
         return transfer2;
     }
+
+
 }

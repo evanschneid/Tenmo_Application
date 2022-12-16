@@ -13,6 +13,8 @@ public interface TransferDao {
 
     boolean sendTransfer(int senderId, int receiverId, double sendingAmount);
 
+    int findTransferId(int userId);
+
     List<Transfer> seeAllTransfers(int userId);
 
     Transfer getTransfer(User user, int transferId);
