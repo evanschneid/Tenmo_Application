@@ -6,6 +6,8 @@ import java.util.Set;
 
 public class User {
 
+   // this is for a test
+
    private int id;
    private String username;
    private String password;
