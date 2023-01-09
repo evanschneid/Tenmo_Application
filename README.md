@@ -1,6 +1,8 @@
 # Module 2 Capstone - TEnmo
 
-Congratulations—you've landed a job with TEnmo, whose product is an online payment service for transferring "TE bucks" between friends. However, they don't have a product yet. You've been tasked with finalizing the server side of the application: a database and a RESTful API server.
+*This is a Pair Programming assignment from Tech Elevator*
+
+Congratulations- I've landed a job with TEnmo, whose product is an online payment service for transferring "TE bucks" between friends. However, they don't have a product yet. I've been tasked with finalizing the server side of the application: a database and a RESTful API server.
 
 You will need to add controllers, models, DAOs, and database tables to implement the following features:
 
@@ -8,37 +10,35 @@ You will need to add controllers, models, DAOs, and database tables to implement
 
 ### Required use cases
 
-You should attempt to complete all of the following required use cases.
-
-1. **[COMPLETE]** As a user of the system, I need to be able to register myself with a username and password.
+1. **[COMPLETE]** As a user of the system, the user needs to be able to register myself with a username and password.
    1. The ability to register has been provided in your starter code.
-2. **[COMPLETE]** As a user of the system, I need to be able to log in using my registered username and password.
-   1. Logging in returns an Authentication Token. I need to include this token with all my subsequent interactions with the system outside of registering and logging in.
+2. **[COMPLETE]** As a user of the system, the user needs to be able to log in using my registered username and password.
+   1. Logging in returns an Authentication Token. User needs to include this token with all my subsequent interactions with the system outside of registering and       logging in.
    2. The ability to log in has been provided in your starter code.
    3. User ids start at 1001.
-3. As a user, when I register a new account is created for me.
+3. As a user, when a user register a new account is created for me.
    1. The new account has an initial balance of $1000.
    2. Account ids start at 2001.
-4. As an authenticated user of the system, I need to be able to see my Account Balance.
-5. As an authenticated user of the system, I need to be able to *send* a transfer of a specific amount of TE Bucks to a registered user.
-   1. I should be able to choose from a list of users to send TE Bucks to.
-   2. I must not be allowed to send money to myself.
+4. As an authenticated user of the system, the user needs to be able to see my Account Balance.
+5. As an authenticated user of the system, the user needs to be able to *send* a transfer of a specific amount of TE Bucks to a registered user.
+   1. User should be able to choose from a list of users to send TE Bucks to.
+   2. User must not be allowed to send money to myself.
    3. A transfer includes the User IDs of the from and to users and the amount of TE Bucks.
    4. The receiver's account balance is increased by the amount of the transfer.
    5. The sender's account balance is decreased by the amount of the transfer.
-   6. I can't send more TE Bucks than I have in my account.
-   7. I can't send a zero or negative amount.
+   6. User can't send more TE Bucks than the user has in their account.
+   7. User can't send a zero or negative amount.
    8. A Sending Transfer has an initial status of *Approved*.
    9. Transfer ids start at 3001.
-6. As an authenticated user of the system, I need to be able to see transfers I have sent or received.
-7. As an authenticated user of the system, I need to be able to retrieve the details of any transfer based upon the transfer ID.
+6. As an authenticated user of the system, the user needs to be able to see transfers the user has sent or received.
+7. As an authenticated user of the system, the user needs to be able to retrieve the details of any transfer based upon the transfer ID.
 
 Validate all of the API's endpoints using Postman.  *No sensitive information (i.e. account numbers, user ids, etc) should be passed in the URL.*  Integration testing is required on each method that connects to the database -- remember WET!  Write everything at least twice!
 
 ###  Challenge use cases
 
-8. As an authenticated user of the system, I need to be able to *request* a transfer of a specific amount of TE Bucks from another registered user.
-   1. I should be able to choose from a list of users to request TE Bucks from.
+8. As an authenticated user of the system, the user needs to be able to *request* a transfer of a specific amount of TE Bucks from another registered user.
+   1. The user should be able to choose from a list of users to request TE Bucks from.
    2. I must not be allowed to request money from myself.
    3. I can't request a zero or negative amount.
    4. A transfer includes the User IDs of the from and to users and the amount of TE Bucks.
